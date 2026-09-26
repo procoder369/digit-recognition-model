@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digit Recognition Web App | KNN & FastAPI</title>
+  <meta name="description"
+    content="Handwritten digit recognition web application powered by Scikit-Learn KNN Classifier and FastAPI backend with real-time 8x8 preprocessing.">
+  <!-- Google Fonts: Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <div class="app-layout">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="3" width="18" height="18" rx="4"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"></circle>
+            <path d="M15.5 8.5h.01"></path>
+            <path d="M8.5 15.5h.01"></path>
+            <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <div>
+          <h1 class="app-title">Digit Recognition <span>AI</span></h1>
+          <p class="app-subtitle">Scikit-Learn KNN Classifier &bull; 8×8 Downsampling &bull; FastAPI</p>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Health status badge -->
+        <div id="healthBadge" class="health-badge connecting">
+          <span class="health-pulse"></span>
+          <span id="healthText" class="health-label">Connecting to FastAPI...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Architecture flow stepper -->
+    <div class="pipeline-bar">
+      <div class="pipe-step active">
+        <span class="step-num">1</span>
+        <span class="step-txt">Draw Digit</span>
+      </div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-step">
+        <span class="step-num">2</span>
+        <span class="step-txt">Grayscale & Crop</span>
+      </div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-step">
+        <span class="step-num">3</span>
+        <span class="step-txt">Resize 8×8</span>
+      </div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-step">
+        <span class="step-num">4</span>
+        <span class="step-txt">KNN Model</span>
+      </div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-step">
+        <span class="step-num">5</span>
+        <span class="step-txt">Predicted Result</span>
+      </div>
+    </div>
+
+    <!-- Main Workspace Grid -->
+    <main class="main-content">
+      <!-- Left Card: Drawing Studio -->
+      <section class="card draw-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h2 class="card-title">Drawing Canvas</h2>
+            <span class="badge">Canvas 280×280</span>
+          </div>
+          <div class="toggle-container" title="Automatically predict while drawing">
+            <label class="switch">
+              <input type="checkbox" id="realtimeToggle" checked>
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Live Predict</span>
+          </div>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="digitCanvas" width="280" height="280"></canvas>
+          <div id="canvasPlaceholder" class="canvas-placeholder">
+            <span>Draw any digit (0–9) here</span>
+          </div>
+        </div>
+
+        <!-- Canvas Controls -->
+        <div class="canvas-controls">
+          <div class="stroke-control">
+            <label for="strokeRange">Stroke: <span id="strokeVal">20px</span></label>
+            <input type="range" id="strokeRange" min="10" max="32" value="20" class="slider-range">
+          </div>
+          <div class="btn-group">
+            <button id="clearBtn" class="btn btn-secondary" title="Clear canvas">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+              </svg>
+              Clear
+            </button>
+            <button id="predictBtn" class="btn btn-primary" title="Send to KNN Model">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Predict
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Sample Digits Bar -->
+        <div class="samples-section">
+          <span class="samples-title">Quick Preset Digits:</span>
+          <div class="sample-pills">
+            <button class="sample-btn" data-digit="0">0</button>
+            <button class="sample-btn" data-digit="1">1</button>
+            <button class="sample-btn" data-digit="2">2</button>
+            <button class="sample-btn" data-digit="3">3</button>
+            <button class="sample-btn" data-digit="4">4</button>
+            <button class="sample-btn" data-digit="5">5</button>
+            <button class="sample-btn" data-digit="6">6</button>
+            <button class="sample-btn" data-digit="7">7</button>
+            <button class="sample-btn" data-digit="8">8</button>
+            <button class="sample-btn" data-digit="9">9</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Inference & Diagnostics -->
+      <section class="card results-card">
+        <!-- Hero Prediction Result Banner -->
+        <div class="hero-result" id="heroResult">
+          <div class="prediction-info">
+            <div class="pred-label">MODEL INFERENCE</div>
+            <div class="pred-heading">Predicted: <span id="predDigit" class="pred-value">-</span></div>
+            <div class="pred-subtext" id="predSubtext">Draw a digit on the canvas to begin</div>
+          </div>
+          <div class="confidence-circle" id="confidenceBadge">
+            <div class="conf-pct" id="confPct">0%</div>
+            <div class="conf-label">Confidence</div>
+          </div>
+        </div>
+
+        <!-- Grid Visualization & Probabilities Split -->
+        <div class="diagnostics-split">
+          <!-- 8x8 Model Vision -->
+          <div class="vision-panel">
+            <div class="panel-header">
+              <span class="panel-title">8×8 Preprocessed Grid</span>
+              <span class="panel-subtitle">Scale 0.0 – 16.0</span>
+            </div>
+            <div class="grid-8x8" id="grid8x8">
+              <!-- 64 cells generated by JS -->
+            </div>
+            <div class="grid-caption">Features fed directly into KNN vector (1×64)</div>
+          </div>
+
+          <!-- Class Probabilities Distribution -->
+          <div class="probs-panel">
+            <div class="panel-header">
+              <span class="panel-title">Class Probabilities (0–9)</span>
+              <span class="panel-subtitle" id="knnModeLabel">Loading model info…</span>
+            </div>
+            <div class="prob-list" id="probList">
+              <!-- 10 bars generated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Preprocessing pipeline details -->
+        <div class="pipeline-summary">
+          <div class="detail-item">
+            <span class="d-label">Backend</span>
+            <span class="d-value">FastAPI / Uvicorn</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Classifier</span>
+            <span class="d-value">Scikit-Learn KNN</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Feature Resolution</span>
+            <span class="d-value">8×8 Grayscale Pixels</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label">Inference Time</span>
+            <span class="d-value" id="latencyVal">~2 ms</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Digit Recognition Web App &bull; Powered by FastAPI & Scikit-Learn</p>
+    </footer>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+
+</html>
