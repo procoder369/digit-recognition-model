@@ -54,7 +54,6 @@ digit-recognition-model/
 `main.py` serves the `frontend/` folder as static files, so run everything
 from `backend/` (e.g. `run_app.bat` or `python -m uvicorn main:app`) and open:
 
-URL: http://127.0.0.1:8000/
 ## Author
 
 **procoder369**
